@@ -2,67 +2,627 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta 
-    name="viewport" 
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" 
-  />
-  <title>Culebrita</title>
-  <link rel="stylesheet" href="stilos.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Culebrita - Juego Vertical</title>
+  <style>
+    /* ===== RESET Y ESTILOS GENERALES ===== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #fff0f5);
+      color: #333;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      text-align: center;
+      touch-action: manipulation;
+      padding: 10px;
+    }
+
+    /* ===== CONTENEDOR PRINCIPAL ===== */
+    .wrap {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(252, 107, 162, 0.2);
+      padding: 15px;
+      max-width: 100%;
+      width: 100%;
+      max-width: 400px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== TITULOS Y HEADER ===== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #ff4d88;
+      text-shadow: 2px 2px 8px rgba(255, 77, 136, 0.2);
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .meta {
+      font-size: 0.8rem;
+      color: #555;
+    }
+
+    .score-container {
+      background: rgba(255, 77, 136, 0.1);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    /* ===== CANVAS DEL JUEGO ===== */
+    #game {
+      background: #fff0f5;
+      border: 2px solid #ff4d88;
+      margin: 10px auto;
+      display: block;
+      width: 100%;
+      max-width: 350px;
+      height: 350px;
+      border-radius: 15px;
+      touch-action: none;
+    }
+
+    /* ===== CONTROLES PRINCIPALES ===== */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: linear-gradient(135deg, #ff85a2, #ff4d88);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      min-width: 90px;
+      touch-action: manipulation;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #ff4d88, #ff1a66);
+    }
+
+    .game-settings {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+
+    .difficulty-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 10px;
+      border: 1px solid #ff4d88;
+      background: white;
+    }
+
+    /* ===== CONTROLES TÁCTILES ===== */
+    .touch-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 15px;
+      user-select: none;
+    }
+
+    .d-pad {
+      display: grid;
+      grid-template-areas: 
+        ". up ."
+        "left center right"
+        ". down .";
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .ctrl-btn {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: 2px solid #ff4d88;
+      touch-action: manipulation;
+    }
+
+    .ctrl-btn:active {
+      background: rgba(255, 77, 136, 0.2);
+      transform: scale(0.95);
+    }
+
+    .ctrl-btn[data-dir="up"] { grid-area: up; }
+    .ctrl-btn[data-dir="down"] { grid-area: down; }
+    .ctrl-btn[data-dir="left"] { grid-area: left; }
+    .ctrl-btn[data-dir="right"] { grid-area: right; }
+
+    .center-placeholder {
+      grid-area: center;
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 77, 136, 0.1);
+      border-radius: 50%;
+    }
+
+    /* ===== MODAL DE GAME OVER ===== */
+    .gameover-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .gameover-box {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 90%;
+      width: 300px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: scaleIn 0.3s ease;
+    }
+
+    .gameover-box h2 {
+      color: #ff4d88;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+    }
+
+    .gameover-box p {
+      font-size: 1.1rem;
+      margin: 15px 0;
+    }
+
+    .gameover-modal.fadeOut {
+      animation: fadeOut 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* ===== INSTRUCCIONES ===== */
+    .instructions {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #666;
+      padding: 10px;
+      background: rgba(255, 77, 136, 0.05);
+      border-radius: 10px;
+    }
+
+    /* ===== RESPONSIVE ADJUSTMENTS ===== */
+    @media (max-width: 380px) {
+      #game {
+        height: 300px;
+        max-width: 300px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      button {
+        min-width: 80px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+      
+      .ctrl-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+      }
+      
+      .center-placeholder {
+        width: 55px;
+        height: 55px;
+      }
+    }
+
+    @media (min-width: 500px) {
+      body {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="orientation-warning">
-    📱 Por favor gira el celular en horizontal para jugar mejor.
-  </div>
-  
   <div class="wrap">
     <header>
       <div>
         <h1>La Culebrita</h1>
-        <div class="meta">Usa flechas o W-A-S-D || ¡come el pastelito!</div>
+        <div class="meta">¡Come el pastelito!</div>
       </div>
-      <div class="meta">Puntuación: <span id="score">0</span></div>
+      <div class="meta score-container">Puntuación: <span id="score">0</span></div>
     </header>
 
-    <canvas id="game" width="400" height="400"></canvas>
+    <canvas id="game" width="350" height="350"></canvas>
 
     <div class="controls">
-      <div class="left">
-        <button id="startBtn" class="primary">Iniciar / Reanudar</button>
+      <div class="action-buttons">
+        <button id="startBtn" class="primary">Iniciar</button>
         <button id="pauseBtn">Pausa</button>
         <button id="resetBtn">Reiniciar</button>
       </div>
-      <div class="right info">
-        <div class="hint">
-          Velocidad: 
-          <span id="speedDisplay">8</span> 
-          | Tamaño rejilla: 
-          <span id="gridDisplay">20</span>
-          <br>
-          <div class="difficulty-wrap">
-            <label for="difficulty">Dificultad:</label>
-            <select id="difficulty">
-              <option value="5">Fácil</option>
-              <option value="8" selected>Normal</option>
-              <option value="15">Difícil</option>
-            </select>
-          </div>
+      
+      <div class="game-settings">
+        <div class="meta">Velocidad: <span id="speedDisplay">8</span></div>
+        <div class="difficulty-wrap">
+          <label for="difficulty">Dificultad:</label>
+          <select id="difficulty">
+            <option value="5">Fácil</option>
+            <option value="8" selected>Normal</option>
+            <option value="12">Difícil</option>
+          </select>
         </div>
       </div>
     </div>
 
-    <!-- CONTROLES TÁCTILES SOLO EN CELULAR -->
+    <!-- CONTROLES TÁCTILES -->
     <div class="touch-controls">
-      <div class="middle-row">
+      <div class="meta">Controles táctiles:</div>
+      <div class="d-pad">
         <button class="ctrl-btn" data-dir="up">⬆️</button>
-      </div>
-      <div class="middle-row">
         <button class="ctrl-btn" data-dir="left">⬅️</button>
-        <button class="ctrl-btn" data-dir="down">⬇️</button>
+        <div class="center-placeholder"></div>
         <button class="ctrl-btn" data-dir="right">➡️</button>
+        <button class="ctrl-btn" data-dir="down">⬇️</button>
       </div>
+    </div>
+    
+    <div class="instructions">
+      También puedes usar las flechas del teclado o W-A-S-D
     </div>
   </div>
 
-  <script src="main.js"></script>
+  <script>
+    // ==================== CONFIGURACIÓN ====================
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const speedDisplay = document.getElementById('speedDisplay');
+
+    // Configuración inicial
+    const GRID = 20;            
+    const COLS = canvas.width / GRID;
+    const ROWS = canvas.height / GRID;
+
+    let speed = 8;              
+    let snake = [];
+    let dir = {x:1,y:0};        
+    let nextDir = {x:1,y:0};
+    let food = {};
+    let score = 0;
+    let running = false;
+    let tickInterval = null;
+
+    // ==================== FUNCIONES PRINCIPALES ====================
+    function resetGame(){
+      speed = parseInt(document.getElementById('difficulty').value);
+      snake = [
+        {x:Math.floor(COLS/2), y:Math.floor(ROWS/2)}, 
+      ];
+      dir = {x:1,y:0};
+      nextDir = {x:1,y:0};
+      placeFood();
+      score = 0;
+      updateUI();
+      draw();
+      stopLoop();
+      running = false;
+      startBtn.textContent = "Iniciar";
+    }
+
+    function startGame(){
+      if(running) return;
+      running = true;
+      startBtn.textContent = "Reanudar";
+      stopLoop();
+      tickInterval = setInterval(tick, 1000 / speed);
+    }
+
+    function pauseGame(){
+      running = false;
+      startBtn.textContent = "Reanudar";
+      stopLoop();
+    }
+
+    function stopLoop(){
+      if(tickInterval) clearInterval(tickInterval);
+      tickInterval = null;
+    }
+
+    function placeFood(){
+      let valid = false;
+      while(!valid){
+        const fx = Math.floor(Math.random()*COLS);
+        const fy = Math.floor(Math.random()*ROWS);
+        valid = !snake.some(s=>s.x===fx && s.y===fy);
+        if(valid){ food = {x:fx,y:fy}; }
+      }
+    }
+
+    function tick(){
+      if((nextDir.x !== -dir.x || nextDir.y !== -dir.y)) dir = nextDir;
+
+      const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+      if(head.x < 0) head.x = COLS - 1;
+      if(head.x >= COLS) head.x = 0;
+      if(head.y < 0) head.y = ROWS - 1;
+      if(head.y >= ROWS) head.y = 0;
+
+      if(snake.some(seg=>seg.x===head.x && seg.y===head.y)){
+        gameOver();
+        return;
+      }
+
+      snake.unshift(head);
+
+      if(head.x === food.x && head.y === food.y){
+        score += 1;
+        placeFood();
+        if(score % 5 === 0){
+          speed = Math.min(20, speed + 1);
+          restartInterval();
+        }
+      } else {
+        snake.pop();
+      }
+
+      updateUI();
+      draw();
+    }
+
+    function restartInterval(){
+      if(running){
+        stopLoop();
+        tickInterval = setInterval(tick, 1000 / speed);
+      }
+      speedDisplay.textContent = speed;
+    }
+
+    function gameOver() {
+      pauseGame();
+
+      const oldModal = document.querySelector('.gameover-modal');
+      if (oldModal) oldModal.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'gameover-modal';
+      modal.innerHTML = `
+        <div class="gameover-box">
+          <h2>💔 ¡Juego terminado!</h2>
+          <p>Tu puntuación final fue: <strong>${score}</strong></p>
+          <button id="restartBtn">Jugar otra vez</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      document.getElementById('restartBtn').addEventListener('click', () => {
+        modal.classList.add('fadeOut');
+        setTimeout(() => {
+          modal.remove();
+          resetGame();
+        }, 400);
+      });
+    }
+
+    function updateUI(){
+      scoreEl.textContent = score;
+      speedDisplay.textContent = speed;
+    }
+
+    // dificultad manual
+    const difficultySelect = document.getElementById('difficulty');
+    difficultySelect.addEventListener('change', () => {
+      speed = parseInt(difficultySelect.value);
+      restartInterval();
+      speedDisplay.textContent = speed;
+    });
+
+    // ==================== DIBUJO ====================
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Fondo
+      ctx.fillStyle = '#ffe6f0';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      
+      // Cuadrícula sutil
+      ctx.strokeStyle = 'rgba(255, 77, 136, 0.1)';
+      ctx.lineWidth = 0.5;
+      for(let x = 0; x < COLS; x++) {
+        for(let y = 0; y < ROWS; y++) {
+          ctx.strokeRect(x * GRID, y * GRID, GRID, GRID);
+        }
+      }
+
+      // Comida (pastelito)
+      ctx.fillStyle = '#ff4d88';
+      ctx.beginPath();
+      ctx.arc(food.x * GRID + GRID/2, food.y * GRID + GRID/2, GRID/2 - 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Detalle del pastelito
+      ctx.fillStyle = '#ff85a2';
+      ctx.beginPath();
+      ctx.arc(food.x * GRID + GRID/2, food.y * GRID + GRID/2, GRID/4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Serpiente
+      for(let i=0;i<snake.length;i++){
+        const s = snake[i];
+        if(i===0){
+          // Cabeza
+          ctx.fillStyle = '#ff4d88';
+          ctx.fillRect(s.x * GRID, s.y * GRID, GRID, GRID);
+          
+          // Ojos
+          ctx.fillStyle = 'white';
+          ctx.fillRect(s.x * GRID + 4, s.y * GRID + 4, 4, 4);
+          ctx.fillRect(s.x * GRID + GRID - 8, s.y * GRID + 4, 4, 4);
+        } else {
+          // Cuerpo
+          ctx.fillStyle = i % 2 === 0 ? '#ff85a2' : '#ffb6c1';
+          ctx.fillRect(s.x * GRID, s.y * GRID, GRID, GRID);
+          
+          // Detalles del cuerpo
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.fillRect(s.x * GRID + 2, s.y * GRID + 2, GRID - 4, GRID - 4);
+        }
+      }
+    }
+
+    // ==================== CONTROLES ====================
+    window.addEventListener('keydown', e => {
+      const k = e.key;
+      if(k === 'ArrowUp' || k === 'w' || k === 'W'){ nextDir = {x:0,y:-1}; }
+      if(k === 'ArrowDown' || k === 's' || k === 'S'){ nextDir = {x:0,y:1}; }
+      if(k === 'ArrowLeft' || k === 'a' || k === 'A'){ nextDir = {x:-1,y:0}; }
+      if(k === 'ArrowRight' || k === 'd' || k === 'D'){ nextDir = {x:1,y:0}; }
+      if(k === ' '){ 
+        if(running) pauseGame(); 
+        else startGame(); 
+        e.preventDefault();
+      }
+    });
+
+    // botones UI
+    startBtn.addEventListener('click', () => startGame());
+    pauseBtn.addEventListener('click', () => pauseGame());
+    resetBtn.addEventListener('click', () => resetGame());
+
+    // controles táctiles
+    document.querySelectorAll('.ctrl-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const direction = btn.getAttribute('data-dir');
+        switch(direction) {
+          case 'up': nextDir = {x:0,y:-1}; break;
+          case 'down': nextDir = {x:0,y:1}; break;
+          case 'left': nextDir = {x:-1,y:0}; break;
+          case 'right': nextDir = {x:1,y:0}; break;
+        }
+      });
+    });
+
+    // swipe en móvil
+    let touchStart = null;
+    canvas.addEventListener('touchstart', e=>{
+      const t = e.touches[0];
+      touchStart = {x:t.clientX, y:t.clientY};
+      e.preventDefault();
+    });
+    
+    canvas.addEventListener('touchmove', e=>{
+      e.preventDefault();
+    });
+    
+    canvas.addEventListener('touchend', e=>{
+      if(!touchStart) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStart.x;
+      const dy = t.clientY - touchStart.y;
+      const minSwipeDistance = 30;
+      
+      if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > minSwipeDistance){
+        if(dx > 0) nextDir = {x:1,y:0}; 
+        else nextDir = {x:-1,y:0};
+      } else if(Math.abs(dy) > minSwipeDistance) {
+        if(dy > 0) nextDir = {x:0,y:1}; 
+        else nextDir = {x:0,y:-1};
+      }
+      touchStart = null;
+      e.preventDefault();
+    });
+
+    // Inicialización
+    window.addEventListener('load', () => {
+      resetGame();
+    });
+  </script>
 </body>
 </html>
