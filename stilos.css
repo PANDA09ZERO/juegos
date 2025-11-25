@@ -1,0 +1,363 @@
+/* ===== GENERAL ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #ffe6f0, #fff0f5);
+  color: #333;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+  touch-action: manipulation; /* Mejorar respuesta táctil */
+}
+
+/* ===== AVISO DE ORIENTACIÓN ===== */
+.orientation-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 230, 240, 0.95);
+  z-index: 100;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  padding: 20px;
+  text-align: center;
+}
+
+.orientation-warning::before {
+  content: "📱";
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.wrap {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 25px;
+  box-shadow: 0 12px 30px rgba(252, 107, 162, 0.25);
+  padding: 20px;
+  max-width: 450px;
+  width: 95%;
+  z-index: 20;
+}
+
+/* ===== TITULOS Y HEADER ===== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+header > div:first-child {
+  flex-grow: 1;
+  text-align: left;
+}
+
+header > div.meta {
+  padding-left: 15px;
+}
+
+h1 {
+  font-size: 2.2rem;
+  color: #ff4d88;
+  text-shadow: 2px 2px 8px rgba(255, 77, 136, 0.2);
+  margin: 0 0 5px 0;
+  font-weight: 600;
+  animation: aparecer 0.8s ease forwards;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.meta {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 5px;
+}
+
+.hint {
+  display: block;
+  text-align: right;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Agregado para que la dificultad y velocidad estén en línea */
+.difficulty-wrap {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+/* ===== BOTONES DE ACCIÓN (INICIAR/PAUSA/REINICIAR) ===== */
+button {
+  padding: 12px 20px;
+  margin: 5px;
+  background: linear-gradient(135deg, #ff85a2, #ff4d88);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  min-width: 110px;
+  touch-action: manipulation; /* Mejorar respuesta táctil */
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+button.primary {
+  background: linear-gradient(135deg, #ff4d88, #ff1a66);
+}
+
+/* ===== CANVAS DEL JUEGO ===== */
+#game {
+  background: #fff0f5;
+  border: 2px solid #ff4d88;
+  margin: 10px auto;
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1/1;
+  border-radius: 20px;
+  touch-action: none; /* Prevenir gestos del navegador en el canvas */
+}
+
+/* ===== CONTROLES PRINCIPALES (Botones de acción) ===== */
+.controls {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.controls .left, .controls .right {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.controls .right.info {
+  font-size: 0.9rem;
+  padding: 10px 0;
+}
+
+/* ===== CONTROLES TÁCTILES (Flechas) ===== */
+.touch-controls {
+  display: none;
+  margin-top: 15px;
+  user-select: none;
+}
+
+.touch-controls .middle-row {
+  display: flex;
+  justify-content: center;
+  margin: 5px 0;
+  gap: 15px;
+}
+
+.touch-controls .ctrl-btn {
+  min-width: 70px;
+  min-height: 70px;
+  padding: 15px;
+  font-size: 1.8rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid #ff4d88;
+}
+
+.touch-controls .ctrl-btn:active {
+  background: rgba(255, 77, 136, 0.2);
+  transform: scale(0.95);
+}
+
+/* ===== MODAL DE GAME OVER ===== */
+.gameover-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.gameover-box {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.3s ease;
+}
+
+.gameover-box h2 {
+  color: #ff4d88;
+  margin-top: 0;
+}
+
+.gameover-box p {
+  font-size: 1.2rem;
+  margin: 20px 0;
+}
+
+.gameover-modal.fadeOut {
+  animation: fadeOut 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ========================================= */
+/* ===== MEDIA QUERIES PARA RESPONSIVE ===== */
+/* ========================================= */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 768px) {
+  .wrap {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  header > div:first-child {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  
+  .touch-controls {
+    display: block;
+  }
+  
+  .controls button {
+    min-width: 90px;
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    margin: 3px;
+  }
+  
+  #game {
+    max-width: 350px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+  
+  .wrap {
+    padding: 10px;
+    border-radius: 15px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .meta {
+    font-size: 0.8rem;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .controls .left, .controls .right {
+    width: 100%;
+  }
+  
+  button {
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  #game {
+    max-width: 300px;
+  }
+  
+  .touch-controls .ctrl-btn {
+    min-width: 60px;
+    min-height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
+/* Pantallas grandes */
+@media (min-width: 1200px) {
+  .wrap {
+    max-width: 500px;
+  }
+  
+  #game {
+    max-width: 450px;
+  }
+}
